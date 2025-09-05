@@ -43,7 +43,23 @@ MobileGaitLab/
 ```
 
 ---
-
+## 🔄 Typical Workflow
+```mermaid
+flowchart TD
+    A[Boot ESP32‑S3] --> B[Connect to Wi‑Fi]
+    B --> C[Poll server for command /api/device/command]
+    C -->|Idle| C2[Wait 3s & poll again]
+    C2 --> C
+    C -->|Start| D[Initialize sensors & open CSV on SD_MMC]
+    D --> E[Sampling loop @50Hz]
+    E --> F[Append Measurement rows to CSV]
+    F --> E
+    E -->|Stop received| G[Close CSV & compute session stats]
+    G --> H[Build JSON array of measurements]
+    H --> I[POST /api/device/{patientId}/data (HTTPS)]
+    I --> C
+```
+---
 ## ⚙️ Build & Dependencies (Arduino)
 
 - **Board**: *ESP32S3* (e.g., *Seeed XIAO ESP32‑S3* or similar **without** camera).
@@ -145,7 +161,7 @@ SD_MMC.begin("/sdcard", true, true, SDMMC_FREQ_DEFAULT, 5);
 
 ---
 
-## 🖥️ System Architecture (No‑Camera)
+## 🖥️ System Architecture 
 
 ```
 [ Therapist UI (React) ]
@@ -165,6 +181,14 @@ SD_MMC.begin("/sdcard", true, true, SDMMC_FREQ_DEFAULT, 5);
   • JSON upload after run
 ```
 
+---
+```mermaid
+graph LR
+  ESP32[ESP32-S3] -->|HTTPS Upload| Server[Azure Node.js Backend]
+  Server -->|API + SQL| Database[Azure SQL Database]
+  Server -->|REST API| Frontend[React Web App]
+  Frontend --> Physiotherapist
+```
 ---
 
 ## 🗂️ Data Contracts
