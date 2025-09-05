@@ -46,17 +46,17 @@ MobileGaitLab/
 ## 🔄 Typical Workflow
 ```mermaid
 flowchart TD
-    A[Boot ESP32‑S3] --> B[Connect to Wi‑Fi]
-    B --> C[Poll server for command /api/device/command]
-    C -->|Idle| C2[Wait 3s & poll again]
+    A["Boot ESP32‑S3"] --> B["Connect to Wi‑Fi"]
+    B --> C["Poll server for command<br/>GET /api/device/command"]
+    C -->|Idle| C2["Wait 3s & poll again"]
     C2 --> C
-    C -->|Start| D[Initialize sensors & open CSV on SD_MMC]
-    D --> E[Sampling loop @50Hz]
-    E --> F[Append Measurement rows to CSV]
+    C -->|Start| D["Initialize sensors & open CSV on SD_MMC"]
+    D --> E["Sampling loop @50Hz"]
+    E --> F["Append Measurement rows to CSV"]
     F --> E
-    E -->|Stop received| G[Close CSV & compute session stats]
-    G --> H[Build JSON array of measurements]
-    H --> I[POST /api/device/{patientId}/data (HTTPS)]
+    E -->|Stop received| G["Close CSV & compute session stats"]
+    G --> H["Build JSON array of measurements"]
+    H --> I["POST /api/device/:patientId/data (HTTPS)"]
     I --> C
 ```
 ---
@@ -189,6 +189,43 @@ graph LR
   Server -->|REST API| Frontend[React Web App]
   Frontend --> Physiotherapist
 ```
+---
+```mermaid
+graph LR
+  subgraph Device["ESP32‑S3 Controller"]
+    S1["Hall Sensor (Speed/Distance)"]
+    S2["Foot‑Lift TOF (UART/I2C)"]
+    S3["HX711 Hand Pressure (optional)"]
+    SD["SD_MMC CSV Logger"]
+  end
+
+  subgraph Backend["Azure Node.js Backend"]
+    API1["GET /api/device/command"]
+    API2["POST /api/device/:patientId/data"]
+    DB["Azure SQL Database"]
+  end
+
+  subgraph Frontend["React Web App"]
+    UI1["Therapist Dashboard"]
+    UI2["Charts & Reports"]
+    UI3["Start/Stop Controls"]
+  end
+
+  %% Data flow
+  S1 --> SD
+  S2 --> SD
+  S3 --> SD
+
+  Device -->|HTTPS GET command| API1
+  Device -->|HTTPS POST measurements JSON| API2
+  API2 --> DB
+
+  Frontend -->|REST API| Backend
+  Frontend --> UI1
+  UI1 --> UI2
+  UI1 --> UI3
+```
+
 ---
 
 ## 🗂️ Data Contracts
