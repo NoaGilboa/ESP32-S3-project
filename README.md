@@ -371,3 +371,7 @@ void resetAll();  // zero counters for a fresh run
 ## 📜 License
 
 MIT License © 2025 Mobile Walking Lab Team
+Part of the **Mobile Walking Lab Project**.  
+🔗 Server-side: [MobileWalkingLab_server](https://github.com/NoaGilboa/MobileWalkingLab_server)
+
+---
